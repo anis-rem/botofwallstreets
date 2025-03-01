@@ -76,9 +76,6 @@ content = []
 timestart = time.time()
 for index, subred in enumerate(subreddits, start=1):
     try:
-        delay = random.uniform(1.0, 2.0)
-        time.sleep(delay)
-
         print(f"Processing subreddit {index}/{len(subreddits)}: r/{subred}")
         subreddit = reddit.subreddit(subred)
         post_count = 0

@@ -2,8 +2,16 @@ import praw
 import time
 import os
 import random
+import re
 from dotenv import load_dotenv
-
+def cleandata(contents):
+    cleaned_contents=[]
+    for content in contents:
+        content = re.sub(r"http\S+|www\S+", "", content)
+        content = re.sub(r'[^\s\w$%+\-.,]', '', content)
+        content = re.sub(r"\s+", " ", content).strip()
+        cleaned_contents.append(content)
+    return cleaned_contents
 load_dotenv()
 reddit = praw.Reddit(
     client_id=os.getenv("PRAW_CLIENT_ID"),
@@ -72,7 +80,7 @@ subreddits = [
 ]
 
 post_limit = 50
-content = []
+contents = []
 timestart = time.time()
 for index, subred in enumerate(subreddits, start=1):
     try:
@@ -83,7 +91,7 @@ for index, subred in enumerate(subreddits, start=1):
         for post in subreddit.new(limit=post_limit):
             post_count += 1
             post_content = post.selftext if post.selftext.strip() else "[No text]"
-            content.append(post_content)
+            contents.append(post_content)
             if post_count % 20 == 0:
                 print(f"  Processed {post_count} posts from r/{subred}")
 
@@ -96,12 +104,12 @@ for index, subred in enumerate(subreddits, start=1):
             print(f"Rate limited! Sleeping for {sleep_time:.1f} seconds...")
             time.sleep(sleep_time)
 
-print(f"\nTotal posts collected: {len(content)}")
-
+print(f"\nTotal posts collected: {len(contents)}")
+contents=cleandata(contents)
 timend = time.time()
 elapsed_time = timend - timestart
 print(f"It took {elapsed_time:.2f} seconds")
 if elapsed_time > 0:
-    posts_per_second = len(content) / elapsed_time
+    posts_per_second = len(contents) / elapsed_time
     print(f"Performance: {posts_per_second:.2f} posts/second")
-print(content)
+print(contents)

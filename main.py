@@ -3,15 +3,27 @@ import time
 import os
 import random
 import re
+import nltk
+from nltk.corpus import stopwords
+from nltk.stem import WordNetLemmatizer
 from dotenv import load_dotenv
-def cleandata(contents):
-    cleaned_contents=[]
+nltk.download("punkt")
+nltk.download("stopwords")
+nltk.download("wordnet")
+stop_words=set(stopwords.words("english"))
+lemmatizer = WordNetLemmatizer()
+
+def tokenize_data(contents):
+    tokenized_datas = []
     for content in contents:
         content = re.sub(r"http\S+|www\S+", "", content)
-        content = re.sub(r'[^\s\w$%+\-.,]', '', content)
+        content = re.sub(r'[^\s\w$%+\-.]', '', content)
         content = re.sub(r"\s+", " ", content).strip()
-        cleaned_contents.append(content)
-    return cleaned_contents
+        tokenized_data = nltk.word_tokenize(content)
+        tokenized_data = [lemmatizer.lemmatize(word) for word in tokenized_data if word.lower() not in stop_words]
+        tokenized_datas.append(tokenized_data)
+    return tokenized_datas
+
 load_dotenv()
 reddit = praw.Reddit(
     client_id=os.getenv("PRAW_CLIENT_ID"),
@@ -105,7 +117,7 @@ for index, subred in enumerate(subreddits, start=1):
             time.sleep(sleep_time)
 
 print(f"\nTotal posts collected: {len(contents)}")
-contents=cleandata(contents)
+contents=tokenize_data(contents)
 timend = time.time()
 elapsed_time = timend - timestart
 print(f"It took {elapsed_time:.2f} seconds")

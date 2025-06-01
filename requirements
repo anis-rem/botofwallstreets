@@ -1,0 +1,10 @@
+pandas
+gensim
+nltk
+tqdm
+python-dotenv
+praw
+datasets
+transformers
+torch
+
